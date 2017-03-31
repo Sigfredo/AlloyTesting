@@ -3,17 +3,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -36,7 +32,7 @@ public class A_ReadXMLBunch {
 		
 		try {
 		
-		File fXmlFile = new File("/test/siex_test.xml");
+		File fXmlFile = new File("/test/df.xml");
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 		Document doc = dBuilder.parse(fXmlFile);
@@ -51,6 +47,7 @@ public class A_ReadXMLBunch {
 		
 		
 		System.out.println("----------------------------");
+		System.out.println(nList.getLength());
 		
 		for (int temp = 0; temp < nList.getLength(); temp++) {
 			
@@ -63,64 +60,23 @@ public class A_ReadXMLBunch {
 				
 				
 				if (eElement.getAttribute("type").equals("class") && eElement.getAttribute("confirmed").equals("yes")){
-					
-					String[] nomeClasse = eElement.getTextContent().split("\\.");
 
 					Element e = (Element) eElement.getParentNode();
 					NodeList nl = e.getElementsByTagName("name");
 					String[] nomeChamador = nl.item(0).getTextContent().split("\\.");
 							
+					String[] nomeClasse = eElement.getTextContent().split("\\.");
 					
-							
-					sigs.add(nomeClasse[5]);
-					sigs.add(nomeChamador[5]);
-					relacoes.add(nomeChamador[5]+ "->"+nomeClasse[5]);
+					//guarda "camada.classe"
+					sigs.add(nomeChamador[4]+"."+nomeChamador[5]);
+					sigs.add(nomeClasse[4]+"."+nomeClasse[5]);
+					
+					//relação de dependencia (chamada entre classes)
+					relacoes.add((nomeChamador[5]+ "->"+nomeClasse[5]).replace('$', '_'));
 					
 					//System.out.println(eElement.getTextContent()+ " -> "+eElement.getParentNode().getTextContent());
 					System.out.println(nomeChamador[5]+ " -> "+nomeClasse[5]);
 				}
-
-				
-
-				
-				
-//				for (int i = 0; i < eElement.getElementsByTagName("outbound").getLength(); i++) {
-//					if (eElement.getElementsByTagName("outbound").item(i).getTextContent().contains("br.unb.")){
-//						
-//						
-//						
-//						for (int j = 0; j < eElement.getElementsByTagName("outbound").item(i).getAttributes().getLength(); j++) {
-//						
-//							Node n1 = eElement.getElementsByTagName("outbound").item(i);
-//							String temp2 = n1.getAttributes().item(j).getTextContent();
-//							System.out.println(temp2);
-//							
-//						}
-//						
-//						
-//
-//						//Separa a classe chamadora da chamada; Se contem "(" é um método
-//						if (eElement.getElementsByTagName("outbound").item(i).getTextContent().contains("(")){
-//							caller = eElement.getElementsByTagName("outbound").item(i).getParentNode();
-//							
-//						} else{
-//							caller = eElement.getElementsByTagName("outbound").item(i);
-//						}					
-//						
-//						//limpa o nome retirando os identificadores de pacote
-//						//String[] result = caller.contains("(")?caller.split("\\.(.*?)\\)"):caller.split(".");
-//						String[] result = caller.getTextContent().split("\\.");
-//						
-//						sigs.add(result[5]);	
-//						relacoes.add("");
-//					}
-//				}
-				
-				//sigs.add(eElement.getElementsByTagName("outbound").item(i).getTextContent());
-			//System.out.println(pai.getElementsByTagName("name").item(0).getTextContent() + "  --->  " + eElement.getElementsByTagName("outbound").item(i).getTextContent());
-//				for (String s : sigs) {
-//					System.out.println("signature: "+s);	
-//				}
 		
 			}
 		
@@ -137,23 +93,48 @@ public class A_ReadXMLBunch {
 		
 		//tenho que buscar o módulo depois
 		String modulo = "siex";
+		String visao = "";
+		String negocio = "";
+		String persistencia = "";
+		String pojo ="";
+		String vo = "";
 		
-		//Monta a string de declaração das signatures
-		declaracao = sigs.iterator().next()+"\n";	
-		for (String s : sigz) {
-			if (!s.equals(sigz.iterator().next())){
-				declaracao += ", "+ s;
+		try{		
+			//Monta a string de declaração das signatures
+			//declaracao = sigs.iterator().next()+"\n";	
+			for (String s : sigz) {
+				
+				String[] stt = s.split("\\.");
+				String st = stt[1].replace('$', '_');
+				
+				declaracao += declaracao.equals("")?st:", "+ st;
+				
+				if (stt[0].equals("visao")){
+					visao += visao.equals("")?st:" + "+ st;
+				}else if (stt[0].equals("negocio")){
+					negocio += negocio.equals("")?st:" + "+ st;
+				}else if (stt[0].equals("persistencia")){
+					persistencia += persistencia.equals("")?st:" + "+ st;
+				}else if (stt[0].equals("pojo")){
+					pojo += pojo.equals("")?st:" + "+ st;
+				}else if (stt[0].equals("vo")){
+					vo += vo.equals("")?st:" + "+ st;
+				}else {
+					System.out.println("Classe ignorada: "+s);
+				}
 			}
-		}
-		
-		//Monta a string de declaração de relações
-		relacionamento = rel.iterator().next()+"\n";
-		for (String s : rel) {
-			if (!s.equals(rel.iterator().next())){
-				relacionamento += "+ "+s+"\n";	
-			}
-		}
 			
+			//Monta a string de declaração de relações
+			relacionamento = rel.iterator().next()+"\n";
+			for (String s : rel) {
+				if (!s.equals(rel.iterator().next())){
+					relacionamento += "+ "+s+"\n";	
+				}
+			}
+				
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		
 		try (Writer writer = new BufferedWriter(new OutputStreamWriter(
@@ -164,13 +145,27 @@ public class A_ReadXMLBunch {
 						+"abstract sig Classe { usa: set Classe}\n"
 						+ "one sig "+declaracao+" extends Classe{}\n\n"
 						+"sig Camada {\n"
-						+"model: set Classe,\n"
-						+"view: set Classe,\n"
-						+"control: set Classe\n"
+						+"visao: set Classe,\n"
+						+"negocio: set Classe,\n"
+						+"persistencia: set Classe,\n"
+						+"pojo: set Classe,\n"
+						+"vo: set Classe\n"
 						+"}\n\n"	
-						+"fact view{\n"
-						
-						+"}\n"
+						+"fact visao{\n"
+						+"Camada.visao = "+visao
+						+"}\n\n"
+						+"fact negocio{\n"
+						+"Camada.negocio = "+negocio
+						+"}\n\n"
+						+"fact persistencia{\n"
+						+"Camada.persistencia = "+persistencia
+						+"}\n\n"
+						+"fact pojo{\n"
+						+"Camada.pojo = "+pojo
+						+"}\n\n"
+						+"fact vo{\n"
+						+"Camada.vo = "+vo
+						+"}\n\n"
 						+ "fact chamada {usa = \n" + relacionamento + "}\n\n"
 						//+ mensagem.getViolacao()+"\n\n"
 						+ "pred show {}\n\n"
