@@ -17,7 +17,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-public class A_ReadXMLBunch {
+public class A_ReadXMLBunch_qualificacao {
 	private HashSet<String> sigs = new HashSet<String>();
 	private HashSet<String> relacoes = new HashSet<String>();
 
@@ -29,7 +29,7 @@ public class A_ReadXMLBunch {
 	public static void main(String argv[]) {
 		  
 		  
-		  new A_ReadXMLBunch().gerarAlloy();
+		  new A_ReadXMLBunch_qualificacao().gerarAlloy();
 	}
 	
 	public void gerarAlloy(){
@@ -161,7 +161,7 @@ public class A_ReadXMLBunch {
 			new FileOutputStream("C:\\test\\resultadoNovo.als"), "utf-8"))) {
 		writer.write(
 				"module " + modulo +"\n\n"
-						+"abstract sig Classe { classe: set Classe}\n"
+						+"abstract sig Classe { usa: set Classe}\n"
 						+ "one sig "+declaracao+" extends Classe{}\n\n"
 						+"sig Camada {\n"
 						+"model: set Classe,\n"
